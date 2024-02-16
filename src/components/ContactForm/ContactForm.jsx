@@ -1,15 +1,18 @@
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Notify } from 'notiflix';
+import { selectContacts, selectIsLoading } from 'redux/selectors';
+import { addContact } from 'redux/operations';
 
 import { Form, Label, Input } from './ContactForm.styled';
-import { useAddContactMutation, useGetContactsQuery } from 'redux/contactsApi';
 
 const ContactForm = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  const { data: contacts } = useGetContactsQuery();
-  const [addContact, { isLoading }] = useAddContactMutation();
+  const contacts = useSelector(selectContacts);
+  const isLoading = useSelector(selectIsLoading);
+  const dispatch = useDispatch();
 
   const onChange = event => {
     const name = event.target.name;
@@ -31,15 +34,13 @@ const ContactForm = () => {
     event.preventDefault();
 
     try {
-      if (
-        contacts.find(
-          contact =>
-            contact.name.toLocaleLowerCase() === name.toLocaleLowerCase()
-        )
-      )
-        throw new Error(`${name} is already in contacts`);
+      const isContactExist = contacts.find(
+        contact => contact.name.toLocaleLowerCase() === name.toLocaleLowerCase()
+      );
 
-      const result = await addContact({ name, phone });
+      if (isContactExist) throw new Error(`${name} is already in contacts`);
+
+      const result = await dispatch(addContact({ name, phone }));
 
       if (result.error) throw new Error('Failed to add contact to database');
 
@@ -65,6 +66,7 @@ const ContactForm = () => {
           onChange={onChange}
         />
       </Label>
+
       <Label>
         Number
         <Input

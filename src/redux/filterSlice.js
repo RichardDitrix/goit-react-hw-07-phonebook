@@ -12,14 +12,4 @@ export const filterSlice = createSlice({
 
 export const { updateFilter } = filterSlice.actions;
 
-// export const getContacts = state => state.contacts.items;
 export const getFilter = state => state.filter;
-
-// export const getFilteredContacts = state => {
-//   const items = getContacts(state);
-//   const filter = getFilter(state);
-
-//   return items.filter(({ name }) =>
-//     name.toLowerCase().includes(filter.toLowerCase())
-//   );
-// };

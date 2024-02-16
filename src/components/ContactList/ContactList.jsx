@@ -1,45 +1,34 @@
-import { createSelector } from '@reduxjs/toolkit';
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { useGetContactsQuery } from 'redux/contactsApi';
-import { getFilter } from 'redux/filterSlice';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { ContactListStyled } from './ContactList.styled';
+import { getContacts } from 'redux/operations';
+import {
+  selectError,
+  selectIsLoading,
+  selectVisibleContacts,
+} from 'redux/selectors';
 import ContactItem from 'components/ContactItem';
-
-const useContacts = () => {
-  const filter = useSelector(getFilter);
-
-  const selectFilteredContacts = useMemo(() => {
-    return createSelector(
-      [res => res.data, (_, filter) => filter],
-      (data, filter) =>
-        data?.filter(({ name }) =>
-          name.toLowerCase().includes(filter.toLowerCase())
-        ) ?? []
-    );
-  }, []);
-
-  return useGetContactsQuery(undefined, {
-    selectFromResult: result => ({
-      ...result,
-      filteredContacts: selectFilteredContacts(result, filter),
-    }),
-  });
-};
+import { ContactListStyled } from './ContactList.styled';
 
 const ContactList = () => {
-  const { data, filteredContacts, error, isLoading } = useContacts();
+  const contacts = useSelector(selectVisibleContacts);
+  const isLoading = useSelector(selectIsLoading);
+  const isError = useSelector(selectError);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getContacts());
+  }, [dispatch]);
 
   if (isLoading) return <p>Loading...</p>;
 
-  if (error) return <p>Failed to load contacts</p>;
+  if (isError) return <p>Failed to load contacts</p>;
 
-  if (data?.length === 0) return <p>No contacts</p>;
+  if (contacts?.length === 0) return <p>No contacts</p>;
 
   return (
     <ContactListStyled>
-      {filteredContacts?.map(contact => (
+      {contacts?.map(contact => (
         <ContactItem key={contact.id} {...contact} />
       ))}
     </ContactListStyled>

@@ -1,27 +1,27 @@
+import { useDispatch, useSelector } from 'react-redux';
 import { Notify } from 'notiflix';
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
-import { useDeleteContactMutation } from 'redux/contactsApi';
+import { deleteContact } from 'redux/operations';
+import { selectIsLoading } from 'redux/selectors';
 
 import { Info, Item } from './ContactItem.styled';
 
 const ContactItem = ({ id, name, phone }) => {
-  const [deleteContact, { isLoading, isSuccess }] = useDeleteContactMutation();
+  const isLoading = useSelector(selectIsLoading);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (isSuccess) Notify.success('The contact was successfully deleted');
-  }, [isSuccess]);
+  const onDelete = () => {
+    dispatch(deleteContact(id));
+    Notify.success('The contact was successfully deleted');
+  };
 
   return (
     <Item>
       <Info>
         {name}: {phone}
       </Info>
-      <button
-        type="button"
-        disabled={isLoading}
-        onClick={() => deleteContact(id)}
-      >
+
+      <button type="button" disabled={isLoading} onClick={onDelete}>
         Delete
       </button>
     </Item>
